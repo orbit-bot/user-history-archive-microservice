@@ -5,8 +5,8 @@ from datetime import datetime
 INPUT_FILE = "uha-input.txt"
 OUTPUT_DATA_FILE = "uha-output.txt"
 
+"""Stores input (user,action) with timestamp into output file"""
 def store_archive_entry(entry):
-    """Store a single entry to the archive with timestamp."""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     #Parse entry: "user,action" (no space)
@@ -36,42 +36,46 @@ def check_request_type(file):
     if not(first_line.strip()):
         return 1
 
-    elif(first_line == "erase"):
-        f.write("")
+    elif(first_line.strip() == "erase"):
+        clear_input_file()
         return 0
 
     #otherwise, this is archive input
     else:
-        return first_line
+        clear_input_file()
+        return first_line.strip()
 
 def erase_archive_file():
     with open(OUTPUT_DATA_FILE, "w+") as f:
         f.write("")
         print("Archive erased.")
 
-#checking input from main program
-def read_input():
-    while True:
-        try: 
-            with open(INPUT_FILE, "r+") as f:
+def read_and_process_input():
+    try: 
+        file_result = check_request_type(INPUT_FILE)
 
-                file_result = check_request_type(f)
+        if file_result == 0:
+            erase_archive_file()
 
-                if file_result == 0:
-                    erase_archive_file()
-
-                elif file_result == 1:
-                    return
-
-                else:
-                    #store input
-                    store_archive_entry(file_result)
-
-        except FileNotFoundError:
-            print("Error: file not found")
+        elif file_result == 1:
             return
-        
+
+        else:
+            #store input
+            store_archive_entry(file_result)
+
+    except FileNotFoundError:
+        print("Error: file not found")
+        return
+
+def main():
+    while True:
+        read_and_process_input()
         time.sleep(1)
+
+
+if __name__ == "__main__":
+    main()
 
 
 
